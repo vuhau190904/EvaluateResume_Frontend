@@ -31,59 +31,12 @@ const ResultPage = () => {
         const evaluationData = response?.data;
         
         if (evaluationData) {
-          // Get metadata from localStorage
-          const metadataKey = `eval_${evaluationId}`;
-          const savedMetadata = localStorage.getItem(metadataKey);
-          let metadata = {};
-          
-          console.log('Fetching metadata for:', metadataKey);
-          console.log('Saved metadata:', savedMetadata);
-          
-          if (savedMetadata) {
-            try {
-              metadata = JSON.parse(savedMetadata);
-              console.log('Parsed metadata:', metadata);
-            } catch (e) {
-              console.error('Error parsing metadata:', e);
-            }
-          }
-          
-          // If metadata not found, try to get from history API as fallback
-          if (!metadata.file_name || !metadata.jobDescription) {
-            try {
-              const historyResponse = await evaluateAPI.getHistory();
-              if (historyResponse?.success && historyResponse?.data) {
-                const historyItem = historyResponse.data.find(item => item.id === evaluationId);
-                if (historyItem) {
-                  console.log('Found in history:', historyItem);
-                  metadata = {
-                    file_name: historyItem.file_name || metadata.file_name,
-                    jobDescription: historyItem.jobDescription || metadata.jobDescription,
-                    created_at: historyItem.created_at || metadata.created_at,
-                  };
-                }
-              }
-            } catch (err) {
-              console.error('Error fetching from history:', err);
-            }
-          }
-          
-          // Build full evaluation object with evaluation_result
+          // Build evaluation object with only evaluation_result (no metadata)
           const fullEvaluation = {
             id: evaluationId,
             status: 'completed',
-            file_name: metadata.file_name || 'Resume.pdf',
-            jobDescription: metadata.jobDescription || '',
-            created_at: metadata.created_at || new Date().toISOString(),
             evaluation_result: evaluationData,
           };
-          
-          console.log('Full evaluation object:', fullEvaluation);
-          console.log('Job description:', fullEvaluation.jobDescription);
-          console.log('Job description length:', fullEvaluation.jobDescription?.length);
-          
-          // Clean up localStorage
-          localStorage.removeItem(metadataKey);
           
           setResult(fullEvaluation);
           setLoading(false);
@@ -212,7 +165,7 @@ const ResultPage = () => {
 
   return (
     <div className="result-page">
-      <EvaluationDetail evaluation={result} />
+      <EvaluationDetail evaluation={result} showMetadata={false} />
     </div>
   );
 };

@@ -70,15 +70,6 @@ const HomePage = () => {
     try {
       const evaluationId = uuidv4();
       
-      // Save metadata to localStorage for result page
-      const metadata = {
-        file_name: cvFile.name,
-        jobDescription: jobDescription.trim(),
-        created_at: new Date().toISOString()
-      };
-      console.log('Saving metadata:', metadata);
-      localStorage.setItem(`eval_${evaluationId}`, JSON.stringify(metadata));
-      
       await evaluateAPI.uploadResume(cvFile, jobDescription, evaluationId);
       showToast('Upload successful! Processing...', 'success');
       navigate(`/result/${evaluationId}`);
@@ -212,3 +203,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+

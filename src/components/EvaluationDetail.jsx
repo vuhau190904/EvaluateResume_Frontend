@@ -1,6 +1,6 @@
 import './EvaluationDetail.css';
 
-const EvaluationDetail = ({ evaluation }) => {
+const EvaluationDetail = ({ evaluation, showMetadata = true }) => {
   if (!evaluation) {
     return <div className="evaluation-detail">No evaluation data available</div>;
   }
@@ -36,35 +36,39 @@ const EvaluationDetail = ({ evaluation }) => {
 
   return (
     <div className="evaluation-detail">
-      {/* Header Section */}
-      <div className="detail-header">
-        <div className="header-info">
-          <h2>{evaluation.file_name}</h2>
-          <p className="eval-date">
-            Evaluated on {new Date(evaluation.created_at).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
-          </p>
-          
-          {/* Job Description */}
-          {evaluation.jobDescription && evaluation.jobDescription.trim() && (
-            <div className="jd-header-section">
-              <h4 className="jd-header-title">Job Description</h4>
-              <div className="jd-header-content">
-                {evaluation.jobDescription.split('\n').map((line, index) => (
-                  <p key={index} className="jd-line">
-                    {line || '\u00A0'}
-                  </p>
-                ))}
+      {/* Header Section - Only show if showMetadata is true */}
+      {showMetadata && (
+        <div className="detail-header">
+          <div className="header-info">
+            {evaluation.file_name && <h2>{evaluation.file_name}</h2>}
+            {evaluation.created_at && (
+              <p className="eval-date">
+                Evaluated on {new Date(evaluation.created_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+            )}
+            
+            {/* Job Description */}
+            {evaluation.jobDescription && evaluation.jobDescription.trim() && (
+              <div className="jd-header-section">
+                <h4 className="jd-header-title">Job Description</h4>
+                <div className="jd-header-content">
+                  {evaluation.jobDescription.split('\n').map((line, index) => (
+                    <p key={index} className="jd-line">
+                      {line || '\u00A0'}
+                    </p>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Overall Scores Summary */}
       <div className="scores-summary">
@@ -262,3 +266,4 @@ const EvaluationDetail = ({ evaluation }) => {
 };
 
 export default EvaluationDetail;
+
