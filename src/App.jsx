@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import HistoryPage from './pages/HistoryPage';
 import HistoryDetailPage from './pages/HistoryDetailPage';
 import ResultPage from './pages/ResultPage';
+import SuggestJDPage from './pages/SuggestJDPage';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -33,6 +34,7 @@ function App() {
           <Route path="/history" element={<ProtectedRoute><HistoryPage /></ProtectedRoute>} />
           <Route path="/history/:id" element={<ProtectedRoute><HistoryDetailPage /></ProtectedRoute>} />
           <Route path="/result/:evaluationId" element={<ProtectedRoute><ResultPage /></ProtectedRoute>} />
+          <Route path="/suggest-jd" element={<ProtectedRoute><SuggestJDPage /></ProtectedRoute>} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>

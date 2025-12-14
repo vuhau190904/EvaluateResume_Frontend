@@ -171,5 +171,53 @@ export const evaluateAPI = {
   },
 };
 
+/**
+ * Suggest JD API
+ */
+export const suggestAPI = {
+  /**
+   * Search for job descriptions
+   * @param {string} searchInput - Search keyword
+   */
+  searchJob: async (searchInput) => {
+    try {
+      const response = await apiClient.get('/suggest/job', {
+        params: { search_input: searchInput }
+      });
+      return response;
+    } catch (error) {
+      console.error('Error searching job:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get search result by search_id (polling)
+   * @param {string} searchId - UUID của search
+   */
+  getSearchResult: async (searchId) => {
+    try {
+      const response = await apiClient.get(`/suggest/job/${searchId}`);
+      return response;
+    } catch (error) {
+      console.error('Error getting search result:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get search history
+   */
+  getHistory: async () => {
+    try {
+      const response = await apiClient.get('/suggest/history');
+      return response;
+    } catch (error) {
+      console.error('Error getting suggest history:', error);
+      throw error;
+    }
+  },
+};
+
 export default apiClient;
 

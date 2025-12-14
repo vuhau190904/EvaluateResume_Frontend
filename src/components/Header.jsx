@@ -15,6 +15,7 @@ const Header = () => {
     if (location.pathname === '/history') return 'Evaluation History';
     if (location.pathname.startsWith('/history/')) return 'Evaluation Detail';
     if (location.pathname.startsWith('/result/')) return 'Evaluation Results';
+    if (location.pathname === '/suggest-jd') return 'Suggest Job Description';
     return 'Resume AI';
   };
 
