@@ -219,5 +219,94 @@ export const suggestAPI = {
   },
 };
 
+/**
+ * Interview API
+ */
+export const interviewAPI = {
+  /**
+   * Start interview - generate questions
+   * @param {string} resumeId - Resume ID
+   */
+  startInterview: async (resumeId) => {
+    try {
+      const response = await apiClient.get('/interview/start', {
+        params: { resume_id: resumeId }
+      });
+      return response;
+    } catch (error) {
+      console.error('Error starting interview:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get interview questions (polling)
+   * @param {string} resumeId - Resume ID
+   */
+  getQuestions: async (resumeId) => {
+    try {
+      const response = await apiClient.get('/interview/get-question', {
+        params: { resume_id: resumeId }
+      });
+      return response;
+    } catch (error) {
+      console.error('Error getting interview questions:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Submit answer for a question
+   * @param {string} questionId - Question ID
+   * @param {string} answer - User's answer
+   */
+  submitAnswer: async (questionId, answer) => {
+    try {
+      const response = await apiClient.post('/interview/submit-answer', {}, {
+        params: { 
+          question_id: questionId,
+          answer: answer
+        }
+      });
+      return response;
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * End interview and generate feedback
+   * @param {string} resumeId - Resume ID
+   */
+  endInterview: async (resumeId) => {
+    try {
+      const response = await apiClient.get('/interview/end', {
+        params: { resume_id: resumeId }
+      });
+      return response;
+    } catch (error) {
+      console.error('Error ending interview:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get interview feedback
+   * @param {string} resumeId - Resume ID
+   */
+  getFeedback: async (resumeId) => {
+    try {
+      const response = await apiClient.get('/interview/feedback', {
+        params: { resume_id: resumeId }
+      });
+      return response;
+    } catch (error) {
+      console.error('Error getting feedback:', error);
+      throw error;
+    }
+  },
+};
+
 export default apiClient;
 

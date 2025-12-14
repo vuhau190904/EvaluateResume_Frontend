@@ -1,6 +1,8 @@
+import { useNavigate } from 'react-router-dom';
 import './EvaluationDetail.css';
 
 const EvaluationDetail = ({ evaluation, showMetadata = true }) => {
+  const navigate = useNavigate();
   if (!evaluation) {
     return <div className="evaluation-detail">No evaluation data available</div>;
   }
@@ -261,6 +263,163 @@ const EvaluationDetail = ({ evaluation, showMetadata = true }) => {
           <span className="badge-text">{recommendation.text}</span>
         </div>
       </div>
+
+      {/* Interview Result - Show if interview_result exists */}
+      {evaluation.interview_result && (
+        <div className="interview-result">
+          <div className="result-header">
+            <h3>Interview Feedback</h3>
+            {evaluation.interview_result.score !== undefined && (
+              <div className="result-score">
+                <span className="score-label">Score</span>
+                <span className="score-value">{evaluation.interview_result.score}/100</span>
+              </div>
+            )}
+          </div>
+          <div className="result-content">
+            {evaluation.interview_result.feedback && typeof evaluation.interview_result.feedback === 'object' ? (
+              <div className="feedback-content">
+                {/* Overall Summary */}
+                {evaluation.interview_result.feedback.overall_summary && (
+                  <div className="feedback-section">
+                    <h4 className="feedback-section-title">Overall Summary</h4>
+                    <p className="feedback-text">{evaluation.interview_result.feedback.overall_summary}</p>
+                  </div>
+                )}
+
+                {/* Strengths */}
+                {evaluation.interview_result.feedback.strengths && evaluation.interview_result.feedback.strengths.length > 0 && (
+                  <div className="feedback-section">
+                    <h4 className="feedback-section-title strengths-title">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      Strengths
+                    </h4>
+                    <ul className="feedback-list strengths-list">
+                      {evaluation.interview_result.feedback.strengths.map((strength, index) => (
+                        <li key={index}>{strength}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Weaknesses */}
+                {evaluation.interview_result.feedback.weaknesses && evaluation.interview_result.feedback.weaknesses.length > 0 && (
+                  <div className="feedback-section">
+                    <h4 className="feedback-section-title weaknesses-title">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      Weaknesses
+                    </h4>
+                    <ul className="feedback-list weaknesses-list">
+                      {evaluation.interview_result.feedback.weaknesses.map((weakness, index) => (
+                        <li key={index}>{weakness}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Question Analysis */}
+                {evaluation.interview_result.feedback.question_analysis && evaluation.interview_result.feedback.question_analysis.length > 0 && (
+                  <div className="feedback-section">
+                    <h4 className="feedback-section-title">Question Analysis</h4>
+                    <div className="question-analysis-list">
+                      {evaluation.interview_result.feedback.question_analysis.map((item, index) => (
+                        <div key={index} className="question-analysis-item">
+                          <div className="question-header">
+                            <span className="question-number">Question {index + 1}</span>
+                            <span className={`rating-badge rating-${item.rating || 'default'}`}>
+                              {item.rating || 'N/A'}
+                            </span>
+                          </div>
+                          <div className="question-content">
+                            <div className="question-text">
+                              <strong>Q:</strong> {item.question}
+                            </div>
+                            {item.user_response && (
+                              <div className="user-response">
+                                <strong>A:</strong> {item.user_response}
+                              </div>
+                            )}
+                            {item.analysis && (
+                              <div className="analysis-text">
+                                <strong>Analysis:</strong> {item.analysis}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Advice */}
+                {evaluation.interview_result.feedback.advice && evaluation.interview_result.feedback.advice.length > 0 && (
+                  <div className="feedback-section">
+                    <h4 className="feedback-section-title advice-title">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                      </svg>
+                      Advice
+                    </h4>
+                    <ul className="feedback-list advice-list">
+                      {evaluation.interview_result.feedback.advice.map((advice, index) => (
+                        <li key={index}>{advice}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ) : evaluation.interview_result.feedback && typeof evaluation.interview_result.feedback === 'string' ? (
+              <div className="feedback-content">
+                <div className="feedback-text">
+                  {evaluation.interview_result.feedback.split('\n').map((line, index) => (
+                    <p key={index} className="feedback-line">
+                      {line || '\u00A0'}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Virtual Interview CTA - Only show in ResultPage, not in History */}
+      {!showMetadata && (
+        <div className="virtual-interview-cta">
+          <div className="cta-content">
+            <h3 className="cta-headline">
+              <span className="cta-icon">?</span>
+              Want more accurate feedback?
+            </h3>
+            <p className="cta-description">
+              Take a a virtual interview to get personalized improvement suggestions based on your actual skills and experience.
+            </p>
+            <button 
+              className="cta-button"
+              onClick={() => {
+                // Navigate to virtual interview page
+                const evaluationId = evaluation?.id;
+                if (evaluationId) {
+                  navigate(`/virtual-interview/${evaluationId}`);
+                }
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+                <polygon points="10 8 16 12 10 16 10 8"/>
+              </svg>
+              Start Virtual Interview
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
