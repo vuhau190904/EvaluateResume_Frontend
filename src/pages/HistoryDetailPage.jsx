@@ -94,3 +94,4 @@ const HistoryDetailPage = () => {
 
 export default HistoryDetailPage;
 
+
