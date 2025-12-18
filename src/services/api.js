@@ -306,6 +306,35 @@ export const interviewAPI = {
       throw error;
     }
   },
+
+  /**
+   * Speech to text - upload audio file and get transcription
+   * @param {File} audioFile - Recorded audio file (WAV, FLAC, or MP3)
+   */
+  speechToText: async (audioFile) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', audioFile); // Changed from 'audio' to 'file'
+
+      const token = getAccessToken();
+      const response = await axios.post(
+        `${API_URL}/interview/speech-to-text`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+          },
+          timeout: 30000, // 30 seconds
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('Error converting speech to text:', error);
+      throw error;
+    }
+  },
 };
 
 export default apiClient;

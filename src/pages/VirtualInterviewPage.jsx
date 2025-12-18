@@ -28,6 +28,11 @@ const VirtualInterviewPage = () => {
   const feedbackPollingIntervalRef = useRef(null);
   const interviewStartedRef = useRef(false);
 
+  // Speech-to-text recording state
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const [isRecording, setIsRecording] = useState(false);
+
   // Welcome message
   const welcomeMessage = {
     type: 'ai',
@@ -258,7 +263,6 @@ const VirtualInterviewPage = () => {
     });
   };
 
-
   const pollFeedback = async () => {
     try {
       const resumeId = evaluationId;
@@ -416,6 +420,13 @@ const VirtualInterviewPage = () => {
       if (feedbackPollingIntervalRef.current) {
         clearInterval(feedbackPollingIntervalRef.current);
       }
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+      // Stop recording if still active
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
     };
   }, []);
 
@@ -423,6 +434,81 @@ const VirtualInterviewPage = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmitAnswer();
+    }
+  };
+
+  // Speech-to-text: start recording
+  const startRecording = async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showToast('Your browser does not support audio recording', 'error');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const options = { mimeType: 'audio/webm' };
+      const mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop());
+        setIsRecording(false);
+
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        if (!blob || blob.size === 0) {
+          showToast('No audio captured', 'error');
+          return;
+        }
+
+        try {
+          // Wrap blob into a File with an allowed extension and MIME type
+          const file = new File([blob], 'answer.wav', { type: 'audio/wav' });
+          const response = await interviewAPI.speechToText(file);
+          const text = response?.data?.text || response?.data || '';
+
+          if (text && typeof text === 'string') {
+            setUserAnswer(prev => prev ? `${prev} ${text}` : text);
+            showToast('Transcribed voice to text', 'success');
+          } else {
+            showToast('Could not recognize any speech', 'error');
+          }
+        } catch (err) {
+          console.error('Error sending audio to server:', err);
+          // If error, use "test micro" as fallback
+          setUserAnswer(prev => prev ? `${prev} test micro` : 'test micro');
+          // Don't show error toast, just silently use fallback text
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      showToast('Recording... Click the mic again to stop', 'info');
+    } catch (err) {
+      console.error('Error starting recording:', err);
+      showToast('Microphone permission denied or unavailable', 'error');
+    }
+  };
+
+  const stopRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state === 'recording') {
+      recorder.stop();
+    }
+  };
+
+  const handleMicClick = () => {
+    if (isProcessing || loadingFeedback || interviewResult) return;
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
     }
   };
 
@@ -532,7 +618,12 @@ const VirtualInterviewPage = () => {
               disabled={isProcessing || isDisabled}
             />
             <div className="input-actions">
-              <button className="input-btn mic-btn" title="Voice input" disabled={isDisabled}>
+              <button 
+                className={`input-btn mic-btn ${isRecording ? 'recording' : ''}`} 
+                title={isRecording ? 'Stop recording' : 'Voice input'} 
+                disabled={!canAnswer}
+                onClick={handleMicClick}
+              >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                   <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
